@@ -4,7 +4,6 @@ import requests
 import pandas as pd
 from bs4 import BeautifulSoup
  
-
 # File to store processed patents
 
 ##-----------------------------------------------here adding checkpoint 
