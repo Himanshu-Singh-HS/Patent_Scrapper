@@ -1,0 +1,5 @@
+requests
+pandas
+beautifulsoup4
+
+# pip install -r requirements.txt
