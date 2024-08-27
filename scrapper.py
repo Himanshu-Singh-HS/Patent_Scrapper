@@ -4,29 +4,8 @@ import requests
 import pandas as pd
 from bs4 import BeautifulSoup
  
-# File to store processed patents
 
-##-----------------------------------------------here adding checkpoint 
-
-
-checkpoint_file = 'complete_patents.json'
-
-def load_checkpoint():
-    if os.path.exists(checkpoint_file):
-        with open(checkpoint_file, 'r') as file:
-            return json.load(file)
-    return {}
-
-# Function to save the checkpoint
-def save_checkpoint(checkpoint_data):
-    with open(checkpoint_file, 'w') as file:
-        json.dump(checkpoint_data, file, indent=4)
-
-##---------------------------------------------------------------------------------------
-
-
-
-leaf_classifications_dict = {"no_classification_data":[]}
+leaf_classifications_dict = {}
 done_patents=set()
 def get_first_column_as_list(file_path):
     
@@ -122,34 +101,32 @@ def extract_and_save_leaf_codes(base_url, co_doc_kind, count):
         url = base_url.format(patent_number)
         print(f"Processing {patent_number}...")
         leaf_code = get_first_leaf_classification(url,patent_number)
+        
+        if len(done_patents) % 10 == 0:   
+            with open('leaf_classifications_dict.json', 'w') as file:
+                json.dump(leaf_classifications_dict, file, indent=4)
+            print("Progress saved.")
     print(f'Co-document kind {"".join(co_doc_kind)} has been scrapped with a descending count of 10.')
 
     return None
 
 
-output_dir = 'output_data'
-if not os.path.exists(output_dir):
-    os.makedirs(output_dir)
 
 file_path = 'UCIDs List.xlsx'
 first_column_list = get_first_column_as_list(file_path)
-
-#load checkpoint
-checkpoint = load_checkpoint()
-last_processed_ucid = checkpoint.get('last_processed_ucid', None)
-
 
 
 try:
     for ucid in first_column_list:
          
+        with open('last_patent_number','w') as file_save:
+            file_save.write(ucid)      
         co_doc_kind= test_pattern(ucid)
         base_url = 'https://patents.google.com/patent/{}/en'
         count=10
         extract_and_save_leaf_codes(base_url, co_doc_kind, count)
         time.sleep(10)
- 
-
+        
 
 except Exception as error:
     raise error
@@ -160,7 +137,6 @@ finally:
         json.dump(leaf_classifications_dict, file, indent=4)
     print(leaf_classifications_dict)
     print(len(done_patents))
-
 
 
 
